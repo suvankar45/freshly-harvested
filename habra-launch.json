@@ -1,0 +1,73 @@
+{
+  "brand": {
+    "name": "Freshly Harvested",
+    "tagline": "Good food. Every day.",
+    "currency": "INR",
+    "currencySymbol": "₹",
+    "languages": [
+      "bn-IN",
+      "en-IN"
+    ]
+  },
+  "launch": {
+    "country": "IN",
+    "state": "West Bengal",
+    "city": "Habra",
+    "stockPointLabel": "Near Habra Bazar, Habra, West Bengal",
+    "primaryPostalCode": "743263"
+  },
+  "delivery": {
+    "model": "own-fleet",
+    "defaultRadiusKm": 4,
+    "proposedRadiusRangeKm": [
+      3,
+      5
+    ],
+    "zones": [
+      {
+        "id": "habra-bazar-core",
+        "name": "Habra Bazar & nearby",
+        "centerLabel": "Near Habra Bazar, Habra",
+        "radiusKm": 4,
+        "deliveryFeeRupees": 25,
+        "freeDeliveryAboveRupees": 499,
+        "minimumOrderRupees": 99,
+        "enabled": true
+      }
+    ],
+    "note": "Provisional launch settings. Confirm exact stock-point address, route coverage, fees and serviceable PIN codes before going live."
+  },
+  "payments": {
+    "methods": [
+      "upi",
+      "card",
+      "cash_on_delivery"
+    ],
+    "provider": "Razorpay",
+    "live": false
+  },
+  "operations": {
+    "inventoryModel": "single-owned-stock-point",
+    "orderStatuses": [
+      "placed",
+      "confirmed",
+      "packing",
+      "ready_for_pickup",
+      "out_for_delivery",
+      "delivered",
+      "cancelled"
+    ],
+    "deliveryAssignment": "manual-admin-assignment"
+  },
+  "catalogue": {
+    "categories": [
+      "vegetables",
+      "fruits",
+      "meat",
+      "fish",
+      "dairy",
+      "groceries"
+    ],
+    "samplePricesOnly": true
+  }
+}

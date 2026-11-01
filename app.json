@@ -1,0 +1,18 @@
+{
+  "expo": {
+    "name": "Freshly Harvested",
+    "slug": "freshly-harvested",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "backgroundColor": "#F6F8F1"
+    },
+    "android": {
+      "package": "com.freshlyharvested.app",
+      "adaptiveIcon": {
+        "backgroundColor": "#176B45"
+      }
+    }
+  }
+}

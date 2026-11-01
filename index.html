@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Freshly Harvested | Operations</title>
+<style>
+:root{font-family:Inter,system-ui,Arial,sans-serif;color:#203b2b;background:#f5f7f1}*{box-sizing:border-box}body{margin:0}.top{background:#173d2a;color:white;padding:20px 24px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}.top small{color:#c9ddcb}.wrap{max-width:1180px;margin:auto;padding:22px}.notice{background:#fff4d9;border:1px solid #f0d99a;padding:12px 14px;border-radius:12px;font-size:13px;margin-bottom:18px}.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.stat,.panel{background:white;border:1px solid #e5ebdf;border-radius:14px;padding:16px}.stat span{display:block;color:#748174;font-size:12px}.stat strong{display:block;font-size:25px;margin-top:5px}.tabs{display:flex;gap:8px;margin:20px 0;flex-wrap:wrap}.tabs button,button{border:0;border-radius:9px;padding:10px 13px;background:#176b45;color:white;font-weight:700;cursor:pointer}.tabs button{background:#e6eee2;color:#31533c}.tabs button.active{background:#176b45;color:white}.panel h2{margin:0 0 14px;font-size:18px}.tools{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}.tools input,.tools select,input,select{border:1px solid #dce5d8;border-radius:8px;padding:10px;background:white;min-width:0}.tools input{flex:1;min-width:180px}table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;padding:11px 8px;border-bottom:1px solid #edf0e9}th{color:#758274;font-size:11px;text-transform:uppercase}td button{padding:7px 9px;margin:2px}.pill{display:inline-block;background:#e7f2e4;color:#245438;padding:5px 8px;border-radius:20px;font-size:11px;font-weight:700}.low{background:#fff0df;color:#92551b}.muted{color:#829083;font-size:12px}.hidden{display:none}.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.row>*{flex:1}.foot{color:#859184;font-size:11px;margin:18px 2px}@media(max-width:720px){.stats{grid-template-columns:repeat(2,1fr)}.wrap{padding:14px}.panel{overflow-x:auto}table{min-width:620px}}
+</style></head><body>
+<header class="top"><div><b style="font-size:21px">🌿 Freshly Harvested</b><br><small>Operations dashboard · Habra Bazar launch</small></div><div><small>Stock point: Near Habra Bazar, Habra, WB</small></div></header>
+<main class="wrap">
+<div class="notice"><b>Prototype dashboard:</b> this page stores demo changes in this browser only. It is not connected to customer orders, Supabase, payments or live inventory. Sample prices and sample orders must be replaced before launch.</div>
+<section class="stats"><div class="stat"><span>Orders in demo queue</span><strong id="statOrders">3</strong></div><div class="stat"><span>Needs attention</span><strong id="statPending">2</strong></div><div class="stat"><span>Products listed</span><strong id="statProducts">9</strong></div><div class="stat"><span>Low-stock products</span><strong id="statLow">2</strong></div></section>
+<nav class="tabs"><button class="active" data-tab="orders">Orders</button><button data-tab="inventory">Inventory</button><button data-tab="zones">Delivery zones</button></nav>
+<section id="orders" class="panel"><h2>Order management</h2><div class="tools"><input id="orderSearch" placeholder="Search order or customer"><select id="statusFilter"><option value="all">All statuses</option><option>placed</option><option>confirmed</option><option>packing</option><option>ready_for_pickup</option><option>out_for_delivery</option><option>delivered</option><option>cancelled</option></select></div><table><thead><tr><th>Order</th><th>Customer</th><th>Items</th><th>Total</th><th>Payment</th><th>Status</th><th>Update</th></tr></thead><tbody id="orderRows"></tbody></table></section>
+<section id="inventory" class="panel hidden"><h2>Inventory control</h2><div class="tools"><input id="productSearch" placeholder="Search products"><button id="addProduct">Add sample product</button></div><table><thead><tr><th>Product</th><th>Category</th><th>Unit</th><th>Price</th><th>Stock</th><th>Stock action</th></tr></thead><tbody id="productRows"></tbody></table></section>
+<section id="zones" class="panel hidden"><h2>Habra delivery setup</h2><p><b>Dispatch origin:</b> Near Habra Bazar, Habra, West Bengal</p><p><b>Primary PIN reference:</b> 743263</p><div class="row"><label>Proposed radius (km)<br><input id="radius" type="number" min="1" max="15" value="4"></label><label>Delivery fee (₹)<br><input id="fee" type="number" min="0" value="25"></label><label>Free delivery above (₹)<br><input id="free" type="number" min="0" value="499"></label><label>Minimum order (₹)<br><input id="minimum" type="number" min="0" value="99"></label></div><p class="muted">These are suggested starting values, not verified route coverage or a confirmed pricing policy.</p><button id="saveZone">Save settings in this browser</button><span id="zoneSaved" class="muted"></span></section>
+<p class="foot">Prototype only · Use authenticated admin access, server-side validation, audit logs and database-backed stock/order transactions for production.</p>
+</main>
+<script>
+const initialOrders=[
+{id:"FH-1001",customer:"Demo customer · Habra",items:"Tomatoes × 2, Milk × 1",total:118,payment:"COD",status:"placed"},
+{id:"FH-1002",customer:"Demo customer · Bira Road",items:"Rohu fish × 1",total:214,payment:"UPI · pending",status:"confirmed"},
+{id:"FH-1003",customer:"Demo customer · Habra Bazar",items:"Bananas × 1, Potatoes × 1",total:99,payment:"COD",status:"out_for_delivery"}];
+const initialProducts=[
+{id:"p1",name:"Farm Fresh Tomatoes",category:"Vegetables",unit:"500 g",price:28,stock:18,threshold:5},
+{id:"p2",name:"Green Spinach",category:"Vegetables",unit:"1 bunch",price:25,stock:4,threshold:5},
+{id:"p3",name:"Fresh Potatoes",category:"Vegetables",unit:"1 kg",price:32,stock:30,threshold:8},
+{id:"p4",name:"Sweet Bananas",category:"Fruits",unit:"6 pcs",price:42,stock:14,threshold:5},
+{id:"p5",name:"Red Apples",category:"Fruits",unit:"4 pcs",price:119,stock:3,threshold:5},
+{id:"p6",name:"Chicken Curry Cut",category:"Meat",unit:"500 g",price:159,stock:10,threshold:3},
+{id:"p7",name:"Rohu Fish",category:"Fish",unit:"500 g",price:189,stock:8,threshold:3},
+{id:"p8",name:"Farm Milk",category:"Dairy",unit:"1 litre",price:62,stock:20,threshold:6},
+{id:"p9",name:"Everyday Toor Dal",category:"Groceries",unit:"1 kg",price:145,stock:16,threshold:5}];
+let orders=JSON.parse(localStorage.fhOrders||"null")||initialOrders;
+let products=JSON.parse(localStorage.fhProducts||"null")||initialProducts;
+const save=()=>{localStorage.fhOrders=JSON.stringify(orders);localStorage.fhProducts=JSON.stringify(products);render()};
+const money=n=>"₹"+Number(n).toFixed(0);
+function render(){
+document.getElementById("statOrders").textContent=orders.length;
+document.getElementById("statPending").textContent=orders.filter(o=>["placed","confirmed"].includes(o.status)).length;
+document.getElementById("statProducts").textContent=products.length;
+document.getElementById("statLow").textContent=products.filter(p=>p.stock<=p.threshold).length;
+const q=(document.getElementById("orderSearch").value||"").toLowerCase(), f=document.getElementById("statusFilter").value;
+document.getElementById("orderRows").innerHTML=orders.filter(o=>(f==="all"||o.status===f)&&JSON.stringify(o).toLowerCase().includes(q)).map(o=>`<tr><td><b>${o.id}</b></td><td>${o.customer}</td><td>${o.items}</td><td>${money(o.total)}</td><td>${o.payment}</td><td><span class="pill">${o.status.replaceAll("_"," ")}</span></td><td><select onchange="updateOrder('${o.id}',this.value)">${["placed","confirmed","packing","ready_for_pickup","out_for_delivery","delivered","cancelled"].map(s=>`<option ${s===o.status?"selected":""}>${s}</option>`).join("")}</select></td></tr>`).join("");
+const pq=(document.getElementById("productSearch").value||"").toLowerCase();
+document.getElementById("productRows").innerHTML=products.filter(p=>p.name.toLowerCase().includes(pq)).map(p=>`<tr><td><b>${p.name}</b></td><td>${p.category}</td><td>${p.unit}</td><td>${money(p.price)}</td><td><span class="pill ${p.stock<=p.threshold?"low":""}">${p.stock} · ${p.stock<=p.threshold?"Low stock":"In stock"}</span></td><td><button onclick="stock('${p.id}',-1)">−</button><button onclick="stock('${p.id}',1)">+</button></td></tr>`).join("");
+}
+window.updateOrder=(id,status)=>{orders=orders.map(o=>o.id===id?{...o,status}:o);save()};
+window.stock=(id,d)=>{products=products.map(p=>p.id===id?{...p,stock:Math.max(0,p.stock+d)}:p);save()};
+document.querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>{document.querySelectorAll("[data-tab]").forEach(x=>x.classList.toggle("active",x===b));["orders","inventory","zones"].forEach(id=>document.getElementById(id).classList.toggle("hidden",id!==b.dataset.tab))});
+["orderSearch","statusFilter","productSearch"].forEach(id=>document.getElementById(id).addEventListener("input",render));
+document.getElementById("addProduct").onclick=()=>{const name=prompt("Product name?");if(!name)return;products.push({id:"p"+Date.now(),name,category:"Groceries",unit:"1 pack",price:0,stock:0,threshold:5});save()};
+document.getElementById("saveZone").onclick=()=>{localStorage.fhZone=JSON.stringify({radiusKm:+radius.value,fee:+fee.value,freeDeliveryAbove:+free.value,minimumOrder:+minimum.value});zoneSaved.textContent=" Saved locally."};
+render();
+</script></body></html>

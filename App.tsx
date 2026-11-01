@@ -1,0 +1,68 @@
+import React, { useMemo, useState } from "react";
+import { SafeAreaView, ScrollView, View, Text, TextInput, Pressable, Image, StyleSheet, StatusBar } from "react-native";
+import { ShoppingBag, Search, MapPin, Plus, Minus, Leaf, ChevronRight, Clock3, Heart } from "lucide-react-native";
+
+type Category = "All" | "Vegetables" | "Fruits" | "Meat" | "Fish" | "Dairy" | "Groceries";
+type Product = { id:string; name:string; category:Category; unit:string; price:number; oldPrice?:number; image:string; tag?:string };
+const categories: {name:Category; emoji:string}[] = [
+  {name:"All",emoji:"🛍️"},{name:"Vegetables",emoji:"🥬"},{name:"Fruits",emoji:"🍎"},
+  {name:"Meat",emoji:"🍗"},{name:"Fish",emoji:"🐟"},{name:"Dairy",emoji:"🥛"},{name:"Groceries",emoji:"🌾"}
+];
+const products: Product[] = [
+  {id:"p1",name:"Farm Fresh Tomatoes",category:"Vegetables",unit:"500 g",price:28,image:"https://images.unsplash.com/photo-1546094096-0df4bcaaa337?w=700",tag:"Fresh today"},
+  {id:"p2",name:"Green Spinach",category:"Vegetables",unit:"1 bunch",price:25,image:"https://images.unsplash.com/photo-1576045057995-568f588f82fb?w=700"},
+  {id:"p3",name:"Fresh Potatoes",category:"Vegetables",unit:"1 kg",price:32,image:"https://images.unsplash.com/photo-1518977676601-b53f82aba655?w=700"},
+  {id:"p4",name:"Sweet Bananas",category:"Fruits",unit:"6 pcs",price:42,image:"https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?w=700"},
+  {id:"p5",name:"Red Apples",category:"Fruits",unit:"4 pcs",price:119,image:"https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=700",tag:"Popular"},
+  {id:"p6",name:"Chicken Curry Cut",category:"Meat",unit:"500 g",price:159,image:"https://images.unsplash.com/photo-1604503468506-a8da13d82791?w=700",tag:"Freshly packed"},
+  {id:"p7",name:"Rohu Fish",category:"Fish",unit:"500 g",price:189,image:"https://images.unsplash.com/photo-1510130387422-82bed34b37e9?w=700"},
+  {id:"p8",name:"Farm Milk",category:"Dairy",unit:"1 litre",price:62,image:"https://images.unsplash.com/photo-1563636619-e9143da7973b?w=700"},
+  {id:"p9",name:"Everyday Toor Dal",category:"Groceries",unit:"1 kg",price:145,image:"https://images.unsplash.com/photo-1515543904379-3d757acky850?w=700"}
+];
+const money = (n:number) => `₹${n.toFixed(0)}`;
+
+export default function App() {
+  const [category,setCategory] = useState<Category>("All");
+  const [query,setQuery] = useState("");
+  const [cart,setCart] = useState<Record<string,number>>({});
+  const [tab,setTab] = useState<"Home"|"Cart"|"Orders"|"Profile">("Home");
+  const [address,setAddress] = useState("Add your delivery location");
+  const [showAddress,setShowAddress] = useState(false);
+  const count = Object.values(cart).reduce((a,b)=>a+b,0);
+  const total = products.reduce((sum,p)=>sum+p.price*(cart[p.id]||0),0);
+  const visible = useMemo(()=>products.filter(p=>(category==="All"||p.category===category)&&p.name.toLowerCase().includes(query.toLowerCase())),[category,query]);
+  const change = (id:string,delta:number) => setCart(old=>({...old,[id]:Math.max(0,(old[id]||0)+delta)}));
+  const checkout = () => { if(!count) return; setTab("Orders"); setCart({}); };
+
+  return <SafeAreaView style={s.safe}>
+    <StatusBar barStyle="dark-content" backgroundColor="#F6F8F1"/>
+    <View style={s.header}>
+      <View style={s.brandRow}><View style={s.logo}><Leaf color="#fff" size={21}/></View><View><Text style={s.brand}>freshly harvested</Text><Text style={s.tagline}>GOOD FOOD. EVERY DAY.</Text></View></View>
+      <Pressable style={s.location} onPress={()=>setShowAddress(!showAddress)}><MapPin size={16} color="#176B45"/><Text style={s.locationText} numberOfLines={1}>{address}</Text><ChevronRight size={15} color="#176B45"/></Pressable>
+    </View>
+    {showAddress && <View style={s.addressBox}><Text style={s.smallLabel}>DELIVERY ADDRESS</Text><TextInput style={s.addressInput} placeholder="Enter area, street and house number" value={address==="Add your delivery location"?"":address} onChangeText={setAddress}/><Pressable onPress={()=>{if(!address.trim())setAddress("Add your delivery location");setShowAddress(false)}}><Text style={s.saveText}>Save address</Text></Pressable></View>}
+    {tab==="Home" && <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={s.content}>
+      <View style={s.hero}><View style={{flex:1}}><Text style={s.heroEyebrow}>FRESHNESS AT YOUR DOOR</Text><Text style={s.heroTitle}>Everyday goodness,{'\n'}delivered fresh.</Text><Text style={s.heroSub}>Handpicked essentials for your kitchen.</Text></View><Text style={s.heroEmoji}>🥬</Text></View>
+      <View style={s.search}><Search color="#788477" size={19}/><TextInput placeholder="Search vegetables, fish, fruits..." value={query} onChangeText={setQuery} style={s.searchInput}/></View>
+      <View style={s.sectionHead}><Text style={s.sectionTitle}>Shop by category</Text><Text style={s.muted}>See all</Text></View>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.categories}>
+        {categories.map(c=><Pressable key={c.name} onPress={()=>setCategory(c.name)} style={[s.category,category===c.name&&s.categoryActive]}><Text style={s.categoryEmoji}>{c.emoji}</Text><Text style={[s.categoryName,category===c.name&&{color:"#176B45"}]}>{c.name}</Text></Pressable>)}
+      </ScrollView>
+      <View style={s.sectionHead}><View><Text style={s.sectionTitle}>{category==="All"?"Fresh picks for you":category}</Text><Text style={s.muted}>Quality essentials, selected daily</Text></View><Clock3 size={17} color="#748174"/></View>
+      <View style={s.grid}>{visible.map(p=><View key={p.id} style={s.card}>
+        <View style={s.imageWrap}><Image source={{uri:p.image}} style={s.productImage}/>{p.tag&&<Text style={s.productTag}>{p.tag}</Text>}</View>
+        <Text style={s.productName}>{p.name}</Text><Text style={s.unit}>{p.unit}</Text>
+        <View style={s.productBottom}><Text style={s.price}>{money(p.price)}</Text>{(cart[p.id]||0)===0?<Pressable style={s.addButton} onPress={()=>change(p.id,1)}><Plus size={17} color="#fff"/></Pressable>:<View style={s.stepper}><Pressable onPress={()=>change(p.id,-1)}><Minus size={15} color="#176B45"/></Pressable><Text style={s.qty}>{cart[p.id]}</Text><Pressable onPress={()=>change(p.id,1)}><Plus size={15} color="#176B45"/></Pressable></View>}</View>
+      </View>)}</View>
+      {visible.length===0&&<Text style={s.empty}>No products found. Try another search.</Text>}
+      <View style={s.promise}><Leaf color="#176B45" size={20}/><View style={{flex:1}}><Text style={s.promiseTitle}>Freshness is our promise</Text><Text style={s.muted}>Carefully selected. Thoughtfully delivered.</Text></View></View>
+    </ScrollView>}
+    {tab==="Cart"&&<ScrollView contentContainerStyle={s.content}><Text style={s.pageTitle}>Your basket</Text>{products.filter(p=>cart[p.id]).map(p=><View key={p.id} style={s.cartLine}><Image source={{uri:p.image}} style={s.cartImage}/><View style={{flex:1}}><Text style={s.productName}>{p.name}</Text><Text style={s.unit}>{p.unit}</Text><Text style={s.price}>{money(p.price*(cart[p.id]||0))}</Text></View><View style={s.stepper}><Pressable onPress={()=>change(p.id,-1)}><Minus size={15} color="#176B45"/></Pressable><Text style={s.qty}>{cart[p.id]}</Text><Pressable onPress={()=>change(p.id,1)}><Plus size={15} color="#176B45"/></Pressable></View></View>)}{!count&&<Text style={s.empty}>Your basket is empty. Add something fresh!</Text>}{!!count&&<View style={s.summary}><Text style={s.sectionTitle}>Bill details</Text><View style={s.summaryRow}><Text style={s.muted}>Items total</Text><Text style={s.price}>{money(total)}</Text></View><View style={s.summaryRow}><Text style={s.muted}>Delivery fee</Text><Text style={s.price}>Calculated at checkout</Text></View><View style={s.summaryRow}><Text style={s.sectionTitle}>Subtotal</Text><Text style={s.price}>{money(total)}</Text></View><Pressable style={s.checkout} onPress={checkout}><Text style={s.checkoutText}>Place demo order · {money(total)}</Text></Pressable><Text style={s.disclaimer}>Demo only: payment and order submission are not connected yet.</Text></View>}</ScrollView>}
+    {tab==="Orders"&&<View style={s.center}><Text style={{fontSize:48}}>🧺</Text><Text style={s.pageTitle}>Your orders</Text><Text style={s.muted}>Your order history will appear here once backend ordering is connected.</Text></View>}
+    {tab==="Profile"&&<View style={s.content}><Text style={s.pageTitle}>Your profile</Text><View style={s.promise}><Heart color="#176B45"/><View><Text style={s.productName}>Welcome to Freshly Harvested</Text><Text style={s.muted}>Sign-in and saved addresses will be enabled in the next stage.</Text></View></View></View>}
+    <View style={s.bottomNav}>{(["Home","Cart","Orders","Profile"] as const).map((t,i)=><Pressable key={t} onPress={()=>setTab(t)} style={s.navItem}><Text style={[s.navIcon,tab===t&&{color:"#176B45"}]}>{["⌂","🛍","▤","○"][i]}</Text><Text style={[s.navText,tab===t&&{color:"#176B45",fontWeight:"800"}]}>{t}{t==="Cart"&&count>0?` (${count})`:""}</Text></Pressable>)}</View>
+  </SafeAreaView>;
+}
+const s=StyleSheet.create({
+ safe:{flex:1,backgroundColor:"#F6F8F1"},header:{paddingHorizontal:18,paddingTop:10,paddingBottom:12,backgroundColor:"#F6F8F1"},brandRow:{flexDirection:"row",alignItems:"center",gap:10},logo:{width:39,height:39,borderRadius:13,backgroundColor:"#176B45",alignItems:"center",justifyContent:"center"},brand:{fontSize:20,fontWeight:"900",color:"#173D2A",letterSpacing:-.6},tagline:{fontSize:9,fontWeight:"800",letterSpacing:1.7,color:"#829083",marginTop:1},location:{marginTop:14,flexDirection:"row",alignItems:"center",gap:7},locationText:{fontSize:12,color:"#435747",flex:1,fontWeight:"600"},addressBox:{marginHorizontal:18,backgroundColor:"#fff",padding:14,borderRadius:14,marginBottom:8},smallLabel:{fontSize:10,fontWeight:"800",color:"#829083"},addressInput:{borderWidth:1,borderColor:"#e1e8dd",borderRadius:10,padding:10,marginTop:8},saveText:{color:"#176B45",fontWeight:"800",marginTop:10},content:{paddingHorizontal:17,paddingBottom:28},hero:{backgroundColor:"#E5F0DF",borderRadius:20,padding:19,flexDirection:"row",alignItems:"center",marginTop:5,overflow:"hidden"},heroEyebrow:{fontSize:9,fontWeight:"900",letterSpacing:1.5,color:"#4C7655"},heroTitle:{fontSize:23,fontWeight:"900",color:"#173D2A",lineHeight:28,marginTop:7},heroSub:{fontSize:11,color:"#58725C",marginTop:7},heroEmoji:{fontSize:67,marginLeft:4},search:{marginTop:16,backgroundColor:"#fff",borderRadius:13,paddingHorizontal:13,height:48,flexDirection:"row",alignItems:"center",gap:9,borderWidth:1,borderColor:"#edf0e9"},searchInput:{flex:1,fontSize:13,color:"#243b2c"},sectionHead:{marginTop:22,marginBottom:11,flexDirection:"row",justifyContent:"space-between",alignItems:"center"},sectionTitle:{fontSize:16,fontWeight:"900",color:"#203b2b"},muted:{fontSize:11,color:"#879286",marginTop:3},categories:{gap:9,paddingBottom:2},category:{width:76,backgroundColor:"#fff",borderRadius:14,paddingVertical:12,alignItems:"center",borderWidth:1,borderColor:"#edf0e9"},categoryActive:{backgroundColor:"#E8F2E5",borderColor:"#A9C9A8"},categoryEmoji:{fontSize:23},categoryName:{fontSize:10,fontWeight:"700",color:"#536354",marginTop:6},grid:{flexDirection:"row",flexWrap:"wrap",justifyContent:"space-between",rowGap:12},card:{width:"48.2%",backgroundColor:"#fff",borderRadius:15,padding:9,borderWidth:1,borderColor:"#edf0e9"},imageWrap:{height:112,borderRadius:11,overflow:"hidden",backgroundColor:"#edf2e9"},productImage:{width:"100%",height:"100%"},productTag:{position:"absolute",left:6,top:6,backgroundColor:"#E5F0DF",color:"#176B45",fontSize:9,fontWeight:"800",paddingHorizontal:7,paddingVertical:4,borderRadius:7},productName:{fontSize:12,fontWeight:"800",color:"#263b2d",marginTop:9},unit:{fontSize:10,color:"#8a9589",marginTop:3},productBottom:{flexDirection:"row",alignItems:"center",justifyContent:"space-between",marginTop:9},price:{fontSize:14,fontWeight:"900",color:"#173D2A"},addButton:{width:31,height:29,borderRadius:9,backgroundColor:"#176B45",alignItems:"center",justifyContent:"center"},stepper:{flexDirection:"row",alignItems:"center",gap:10,backgroundColor:"#EAF3E7",paddingHorizontal:8,paddingVertical:6,borderRadius:9},qty:{fontSize:12,fontWeight:"900",color:"#176B45"},promise:{marginTop:20,backgroundColor:"#E8F2E5",padding:14,borderRadius:14,flexDirection:"row",alignItems:"center",gap:12},promiseTitle:{fontSize:13,fontWeight:"900",color:"#245438"},empty:{textAlign:"center",color:"#879286",marginTop:30,fontSize:13},pageTitle:{fontSize:24,fontWeight:"900",color:"#173D2A",marginVertical:18},cartLine:{flexDirection:"row",alignItems:"center",gap:12,paddingVertical:12,borderBottomWidth:1,borderBottomColor:"#e7ece3"},cartImage:{width:58,height:58,borderRadius:10},summary:{backgroundColor:"#fff",padding:16,borderRadius:15,marginTop:20},summaryRow:{flexDirection:"row",justifyContent:"space-between",alignItems:"center",marginTop:13},checkout:{backgroundColor:"#176B45",padding:15,borderRadius:12,alignItems:"center",marginTop:18},checkoutText:{color:"#fff",fontWeight:"900",fontSize:14},disclaimer:{fontSize:10,color:"#899387",textAlign:"center",marginTop:9},center:{flex:1,alignItems:"center",justifyContent:"center",padding:25},bottomNav:{height:65,backgroundColor:"#fff",borderTopWidth:1,borderTopColor:"#e8ece5",flexDirection:"row",justifyContent:"space-around",alignItems:"center"},navItem:{alignItems:"center",gap:3,minWidth:58},navIcon:{fontSize:19,color:"#9aa398"},navText:{fontSize:10,color:"#8b9589",fontWeight:"600"}
+});
